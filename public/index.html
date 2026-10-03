@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tixora</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --tm:#026cdf; --sg:#e85d26; --sh:#4a3f8f;
+    --bg:#f9f8f6; --surface:#fff; --surface2:#f2f0ec;
+    --border:rgba(0,0,0,0.09); --border-med:rgba(0,0,0,0.16);
+    --text:#1a1a18; --text2:#6b6b66; --text3:#a0a09a;
+    --r-sm:8px; --r-md:12px; --r-lg:16px;
+  }
+  @media(prefers-color-scheme:dark){:root{
+    --bg:#131310; --surface:#1e1e1b; --surface2:#252522;
+    --border:rgba(255,255,255,0.08); --border-med:rgba(255,255,255,0.15);
+    --text:#f0efe9; --text2:#9a9a93; --text3:#5a5a55;
+  }}
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  /* Header */
+  header { background:var(--surface); border-bottom:0.5px solid var(--border-med); padding:1rem 2rem; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; gap:1rem; }
+  .logo { font-family:'DM Serif Display',serif; font-size:20px; font-weight:400; }
+  .logo span { color:var(--tm); }
+  .hpills { display:flex; gap:6px; flex-wrap:wrap; }
+  .hpill { display:flex; align-items:center; gap:5px; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:500; border:0.5px solid var(--border-med); color:var(--text2); }
+  .hpill-dot { width:6px; height:6px; border-radius:50%; }
+  .hpill.live { color:var(--text); } .hpill.live .hpill-dot { background:#639922; }
+  .hpill.est .hpill-dot { background:#B4B2A9; }
+
+  main { max-width:880px; margin:0 auto; padding:2.5rem 1.5rem 4rem; }
+  .hero { text-align:center; margin-bottom:2.5rem; }
+  .hero h1 { font-family:'DM Serif Display',serif; font-size:clamp(28px,5vw,46px); font-weight:400; line-height:1.15; margin-bottom:10px; }
+  .hero p { font-size:15px; color:var(--text2); max-width:460px; margin:0 auto; line-height:1.6; }
+
+  /* Search */
+  .search-wrap { background:var(--surface); border:0.5px solid var(--border-med); border-radius:var(--r-lg); padding:1rem 1.25rem; display:flex; align-items:center; gap:10px; margin-bottom:1rem; }
+  .search-wrap:focus-within { border-color:var(--text3); }
+  .si { color:var(--text3); flex-shrink:0; width:18px; height:18px; }
+  .search-input { flex:1; border:none; background:transparent; font-size:16px; font-family:inherit; color:var(--text); outline:none; min-width:0; }
+  .search-input::placeholder { color:var(--text3); }
+  .search-btn { padding:8px 20px; background:var(--text); color:var(--bg); border:none; border-radius:var(--r-sm); font-size:14px; font-weight:500; font-family:inherit; cursor:pointer; white-space:nowrap; }
+  .search-btn:hover { opacity:.82; }
+
+  /* Filter bar — category chips */
+  .filter-bar { display:flex; gap:6px; margin-bottom:1rem; flex-wrap:wrap; align-items:center; }
+  .fchip { padding:6px 14px; border:0.5px solid var(--border-med); border-radius:999px; font-size:12px; cursor:pointer; color:var(--text2); background:transparent; font-family:inherit; transition:all .12s; }
+  .fchip:hover { color:var(--text); border-color:var(--text3); }
+  .fchip.on { background:var(--text); color:var(--bg); border-color:transparent; font-weight:500; }
+
+  /* Ticket options bar — quantity + section */
+  .ticket-options { display:flex; gap:10px; margin-bottom:2rem; flex-wrap:wrap; align-items:center; }
+  .ticket-options-label { font-size:12px; color:var(--text3); font-weight:500; text-transform:uppercase; letter-spacing:.05em; flex-basis:100%; margin-bottom:-4px; }
+
+  .opt-group { display:flex; align-items:center; gap:0; background:var(--surface); border:0.5px solid var(--border-med); border-radius:var(--r-md); overflow:hidden; }
+  .opt-label { font-size:12px; color:var(--text2); padding:7px 12px; border-right:0.5px solid var(--border-med); white-space:nowrap; background:var(--surface2); }
+  .opt-select { font-size:13px; font-family:inherit; color:var(--text); background:transparent; border:none; outline:none; padding:7px 10px; cursor:pointer; }
+
+  .qty-stepper { display:flex; align-items:center; background:var(--surface); border:0.5px solid var(--border-med); border-radius:var(--r-md); overflow:hidden; }
+  .qty-label { font-size:12px; color:var(--text2); padding:7px 12px; border-right:0.5px solid var(--border-med); white-space:nowrap; background:var(--surface2); }
+  .qty-btn { width:34px; height:34px; border:none; background:transparent; font-size:16px; cursor:pointer; color:var(--text); display:flex; align-items:center; justify-content:center; transition:background .12s; }
+  .qty-btn:hover { background:var(--surface2); }
+  .qty-val { font-size:14px; font-weight:500; min-width:28px; text-align:center; color:var(--text); padding:0 4px; }
+  .qty-divider { width:0.5px; height:20px; background:var(--border-med); }
+
+  /* Section pills */
+  .section-chips { display:flex; gap:6px; flex-wrap:wrap; }
+  .schip { padding:5px 12px; border:0.5px solid var(--border-med); border-radius:999px; font-size:12px; cursor:pointer; color:var(--text2); background:transparent; font-family:inherit; transition:all .12s; white-space:nowrap; }
+  .schip:hover { color:var(--text); border-color:var(--text3); }
+  .schip.on { background:var(--text); color:var(--bg); border-color:transparent; font-weight:500; }
+
+  /* Results header */
+  .results-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+  .results-hdr span { font-size:13px; color:var(--text2); }
+  .sort-sel { font-size:12px; padding:5px 9px; border:0.5px solid var(--border-med); border-radius:var(--r-sm); background:var(--surface); color:var(--text); font-family:inherit; cursor:pointer; }
+
+  .active-filters { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:1rem; }
+  .af-tag { display:flex; align-items:center; gap:5px; padding:4px 10px; background:var(--surface2); border:0.5px solid var(--border-med); border-radius:999px; font-size:11px; color:var(--text2); }
+  .af-tag b { color:var(--text); font-weight:500; }
+
+  .notice { font-size:12px; color:var(--text2); background:var(--surface2); border:0.5px solid var(--border-med); border-radius:var(--r-md); padding:10px 14px; margin-bottom:1.25rem; line-height:1.5; }
+  .notice b { color:var(--text); }
+
+  /* Event cards */
+  .ecard { background:var(--surface); border:0.5px solid var(--border); border-radius:var(--r-lg); overflow:hidden; margin-bottom:14px; transition:border-color .15s; }
+  .ecard:hover { border-color:var(--border-med); }
+  .ecard-top { padding:1.25rem 1.5rem; display:flex; justify-content:space-between; align-items:flex-start; gap:1.5rem; border-bottom:0.5px solid var(--border); }
+  .ecat { display:inline-block; font-size:10px; font-weight:500; padding:2px 9px; border-radius:999px; margin-bottom:7px; text-transform:uppercase; letter-spacing:.05em; }
+  .cat-music{background:#EAF3DE;color:#3B6D11} .cat-sports{background:#E6F1FB;color:#185FA5}
+  .cat-arts{background:#EEEDFE;color:#3C3489} .cat-comedy{background:#FAEEDA;color:#633806}
+  .cat-other{background:var(--surface2);color:var(--text2)}
+  .etitle { font-size:16px; font-weight:500; margin-bottom:4px; line-height:1.3; }
+  .emeta { font-size:12px; color:var(--text2); line-height:1.5; }
+  .eprice-box { text-align:right; flex-shrink:0; }
+  .eprice-from { font-size:11px; color:var(--text3); margin-bottom:1px; }
+  .eprice-big { font-size:26px; font-weight:300; line-height:1; }
+  .eprice-total { font-size:11px; color:var(--text3); margin-top:2px; }
+  .eprice-qty { font-size:10px; color:var(--text3); margin-top:3px; }
+
+  .ecard-body { padding:1.25rem 1.5rem; }
+  .section-banner { font-size:11px; color:var(--text2); background:var(--surface2); border-radius:var(--r-sm); padding:6px 10px; margin-bottom:12px; display:flex; align-items:center; gap:6px; }
+  .section-banner b { color:var(--text); }
+
+  .platforms-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-bottom:12px; }
+  .pcol { border:0.5px solid var(--border); border-radius:var(--r-md); padding:1rem; text-align:center; position:relative; }
+  .pcol.winner-price { border:1.5px solid #639922; }
+  .pcol.winner-value { border:1.5px solid #378ADD; }
+  .pcol.winner-both  { border:1.5px solid #639922; }
+  .ptag { position:absolute; top:-10px; left:50%; transform:translateX(-50%); font-size:10px; font-weight:500; padding:2px 9px; border-radius:999px; white-space:nowrap; }
+  .ptag-price{background:#EAF3DE;color:#3B6D11} .ptag-value{background:#E6F1FB;color:#185FA5}
+  .pname { font-size:10px; font-weight:500; letter-spacing:.06em; text-transform:uppercase; margin-bottom:4px; }
+  .pname.tm{color:var(--tm)} .pname.sg{color:var(--sg)} .pname.sh{color:var(--sh)}
+  .plive { display:inline-block; font-size:9px; font-weight:500; padding:2px 7px; border-radius:999px; margin-bottom:6px; }
+  .plive-on{background:#EAF3DE;color:#3B6D11} .plive-est{background:var(--surface2);color:var(--text3)}
+  .pprice { font-size:13px; color:var(--text2); margin-top:4px; }
+  .pprice b { font-size:20px; font-weight:400; color:var(--text); }
+  .pprice-each { font-size:10px; color:var(--text3); }
+  .pfee { font-size:11px; color:var(--text3); margin:2px 0 6px; }
+  .ptotal { font-size:13px; color:var(--text2); margin-bottom:10px; font-weight:500; }
+  .ptotal b { color:var(--text); }
+  .pbtn { display:block; width:100%; padding:7px 0; border:0.5px solid var(--border-med); border-radius:var(--r-sm); font-size:12px; font-weight:500; font-family:inherit; cursor:pointer; background:transparent; color:var(--text); text-decoration:none; transition:background .12s; }
+  .pbtn:hover { background:var(--surface2); }
+
+  .savings-strip { padding:9px 14px; background:var(--surface2); border-radius:var(--r-sm); display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text2); flex-wrap:wrap; }
+  .savings-num { font-weight:500; color:#3B6D11; font-size:14px; }
+
+  /* States */
+  .loading { text-align:center; padding:4rem 0; color:var(--text2); font-size:15px; }
+  .dot{animation:blink 1.2s infinite;display:inline-block}
+  .dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
+  @keyframes blink{0%,80%,100%{opacity:0}40%{opacity:1}}
+  .empty { text-align:center; padding:5rem 0; border:0.5px dashed var(--border-med); border-radius:var(--r-lg); }
+  .empty-icon { font-size:36px; margin-bottom:12px; }
+  .empty p { color:var(--text2); font-size:15px; margin-bottom:6px; }
+  .empty small { color:var(--text3); font-size:13px; }
+  .err-box { background:#FCEBEB; color:#791F1F; border:0.5px solid #F09595; border-radius:var(--r-md); padding:1rem 1.25rem; font-size:13px; margin-bottom:12px; }
+
+  .sb { display:flex; gap:8px; margin-bottom:1.25rem; flex-wrap:wrap; }
+  .sb-item { display:flex; align-items:center; gap:6px; padding:5px 12px; border-radius:var(--r-md); border:0.5px solid var(--border-med); font-size:12px; background:var(--surface); }
+  .sb-dot{width:7px;height:7px;border-radius:50%}
+  .sb-dot.green{background:#639922} .sb-dot.red{background:#E24B4A} .sb-dot.gray{background:#B4B2A9} .sb-dot.spin{background:#378ADD;animation:pulse 1s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  footer { text-align:center; font-size:11px; color:var(--text3); line-height:1.8; border-top:0.5px solid var(--border); padding-top:2rem; margin-top:3rem; }
+
+  @media(max-width:640px){
+    header{padding:1rem} .hpills{display:none}
+    main{padding:1.5rem 1rem 3rem}
+    .platforms-grid{grid-template-columns:1fr}
+    .ecard-top{flex-direction:column}
+    .eprice-box{text-align:left}
+    .ticket-options { gap:8px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Tix<span>ora</span></div>
+  <div class="hpills">
+    <div class="hpill live"><span class="hpill-dot"></span>Ticketmaster · Live</div>
+    <div class="hpill live"><span class="hpill-dot"></span>SeatGeek · Live</div>
+    <div class="hpill est"><span class="hpill-dot"></span>StubHub · Est.</div>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <h1>Find the best ticket price,<br>every time.</h1>
+    <p>Live data from Ticketmaster &amp; SeatGeek, compared side by side so you always know where to buy.</p>
+  </div>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <svg class="si" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+    <input class="search-input" id="q" type="text" placeholder="Artist, team, show, venue…" />
+    <button class="search-btn" onclick="doSearch()">Search</button>
+  </div>
+
+  <!-- Category filter -->
+  <div class="filter-bar">
+    <button class="fchip on" data-f="all"    onclick="setF(this)">All events</button>
+    <button class="fchip"    data-f="music"  onclick="setF(this)">Music</button>
+    <button class="fchip"    data-f="sports" onclick="setF(this)">Sports</button>
+    <button class="fchip"    data-f="arts"   onclick="setF(this)">Theater &amp; Arts</button>
+    <button class="fchip"    data-f="comedy" onclick="setF(this)">Comedy</button>
+  </div>
+
+  <!-- Ticket options: quantity + section -->
+  <div class="ticket-options">
+    <div class="ticket-options-label">Ticket preferences</div>
+
+    <!-- Quantity stepper -->
+    <div class="qty-stepper">
+      <div class="qty-label">Qty</div>
+      <button class="qty-btn" onclick="changeQty(-1)">−</button>
+      <div class="qty-divider"></div>
+      <div class="qty-val" id="qtyVal">2</div>
+      <div class="qty-divider"></div>
+      <button class="qty-btn" onclick="changeQty(1)">+</button>
+    </div>
+
+    <!-- Section selector -->
+    <div class="opt-group">
+      <div class="opt-label">Section</div>
+      <select class="opt-select" id="sectionSelect" onchange="onSectionChange()">
+        <option value="any">Any section</option>
+        <option value="floor">Floor / Pit</option>
+        <option value="lower">Lower bowl</option>
+        <option value="mid">Mid level</option>
+        <option value="upper">Upper level</option>
+        <option value="vip">VIP / Suite</option>
+        <option value="ga">General admission</option>
+        <option value="obstructed">Obstructed view</option>
+      </select>
+    </div>
+
+    <!-- Max price per ticket -->
+    <div class="opt-group">
+      <div class="opt-label">Max price</div>
+      <select class="opt-select" id="maxPriceSelect" onchange="onFilterChange()">
+        <option value="0">Any price</option>
+        <option value="50">Under $50</option>
+        <option value="100">Under $100</option>
+        <option value="150">Under $150</option>
+        <option value="200">Under $200</option>
+        <option value="300">Under $300</option>
+        <option value="500">Under $500</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Status bar -->
+  <div id="sb" class="sb"></div>
+
+  <!-- Results -->
+  <div id="area">
+    <div class="empty">
+      <div class="empty-icon">🎟</div>
+      <p>Search for any event to compare prices</p>
+      <small>Set your quantity and section preference above, then search</small>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Ticketmaster &amp; SeatGeek data fetched live. Prices marked "Est." are market-based estimates.<br>
+  Section pricing applies a multiplier based on typical venue pricing tiers.<br>
+  Always confirm your final total at checkout before purchasing.
+</footer>
+
+<script>
+let allEvs  = [];
+let activeF = 'all';
+let qty     = 2;
+let section = 'any';
+let maxPrice = 0;
+let lastPrefix = '';
+
+// Section multipliers vs. baseline (lower bowl = 1.0x reference)
+const SECTION_MULT = {
+  any:        1.00,
+  floor:      1.45,
+  lower:      1.00,
+  mid:        0.72,
+  upper:      0.48,
+  vip:        2.80,
+  ga:         0.60,
+  obstructed: 0.38,
+};
+
+const SECTION_LABELS = {
+  any:'Any section', floor:'Floor / Pit', lower:'Lower bowl',
+  mid:'Mid level', upper:'Upper level', vip:'VIP / Suite',
+  ga:'General admission', obstructed:'Obstructed view',
+};
+
+const catLabels = {music:'Music',sports:'Sports',arts:'Theater & Arts',comedy:'Comedy',other:'Event'};
+const catCls    = {music:'cat-music',sports:'cat-sports',arts:'cat-arts',comedy:'cat-comedy',other:'cat-other'};
+
+function changeQty(delta) {
+  qty = Math.max(1, Math.min(10, qty + delta));
+  document.getElementById('qtyVal').textContent = qty;
+  if (allEvs.length) renderResults(lastPrefix);
+}
+
+function onSectionChange() {
+  section = document.getElementById('sectionSelect').value;
+  if (allEvs.length) renderResults(lastPrefix);
+}
+
+function onFilterChange() {
+  maxPrice = parseInt(document.getElementById('maxPriceSelect').value);
+  if (allEvs.length) renderResults(lastPrefix);
+}
+
+function setStatus(tm, sg) {
+  const dot = s => s==='ok'?'green':s==='err'?'red':s==='loading'?'spin':'gray';
+  const lbl = s => s==='ok'?'Connected':s==='err'?'Error':s==='loading'?'Checking…':'Pending';
+  document.getElementById('sb').innerHTML = `
+    <div class="sb-item"><span class="sb-dot ${dot(tm)}"></span>Ticketmaster: ${lbl(tm)}</div>
+    <div class="sb-item"><span class="sb-dot ${dot(sg)}"></span>SeatGeek: ${lbl(sg)}</div>
+    <div class="sb-item"><span class="sb-dot gray"></span>StubHub: Estimated</div>`;
+}
+
+async function doSearch() {
+  const q = document.getElementById('q').value.trim();
+  if (!q) return;
+  document.getElementById('area').innerHTML = `<div class="loading">Searching for "${q}" <span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></div>`;
+  setStatus('loading', 'loading');
+
+  try {
+    const res  = await fetch(`/api/search?q=${encodeURIComponent(q)}&filter=${activeF}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    setStatus(data.tmErr ? 'err' : 'ok', data.sgErr ? 'err' : 'ok');
+    allEvs = data.events || [];
+
+    lastPrefix = '';
+    if (data.tmErr) lastPrefix += `<div class="err-box">Ticketmaster error: ${data.tmErr}</div>`;
+    if (data.sgErr) lastPrefix += `<div class="err-box">SeatGeek error: ${data.sgErr}</div>`;
+
+    renderResults(lastPrefix);
+  } catch(e) {
+    setStatus('err','err');
+    document.getElementById('area').innerHTML = `<div class="err-box">Search failed: ${e.message}</div>`;
+  }
+}
+
+function setF(el) {
+  document.querySelectorAll('.fchip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  activeF = el.dataset.f;
+  if (allEvs.length) renderResults(lastPrefix);
+}
+
+// Apply section multiplier and quantity to a base per-ticket price
+function applyOptions(basePrice, baseFee) {
+  const mult       = SECTION_MULT[section] || 1.0;
+  const unitPrice  = Math.round(basePrice * mult);
+  const unitFee    = Math.round(baseFee   * mult);
+  const totalPrice = unitPrice * qty;
+  const totalFee   = unitFee   * qty;
+  return { unitPrice, unitFee, totalPrice, totalFee, grandTotal: totalPrice + totalFee };
+}
+
+function renderResults(prefix = '') {
+  lastPrefix = prefix;
+  let evs = activeF === 'all' ? allEvs : allEvs.filter(e => e.cat === activeF);
+
+  // Apply max price filter (per ticket, after section mult)
+  if (maxPrice > 0) {
+    evs = evs.filter(ev => {
+      const minUnit = Math.min(
+        applyOptions(ev.tm.price, ev.tm.fee).unitPrice,
+        applyOptions(ev.sg.price, ev.sg.fee).unitPrice,
+        applyOptions(ev.sh.price, ev.sh.fee).unitPrice
+      );
+      return minUnit <= maxPrice;
+    });
+  }
+
+  const area = document.getElementById('area');
+  if (!evs.length) {
+    area.innerHTML = prefix + `<div class="empty"><div class="empty-icon">🔍</div><p>No events match your filters.</p><small>Try adjusting your section, max price, or category.</small></div>`;
+    return;
+  }
+
+  const liveCount = evs.filter(e => e.tm.live || e.sg.live).length;
+  const estCount  = evs.length - liveCount;
+  let noticeHtml  = estCount > 0
+    ? `<div class="notice"><b>${liveCount}</b> event${liveCount!==1?'s':''} with live prices · <b>${estCount}</b> with market-based estimates. Section pricing applies a ×${SECTION_MULT[section].toFixed(2)} multiplier for <b>${SECTION_LABELS[section]}</b>.</div>`
+    : '';
+
+  // Active filter summary tags
+  const afTags = [];
+  if (qty !== 1) afTags.push(`<div class="af-tag"><b>${qty}</b> tickets</div>`);
+  if (section !== 'any') afTags.push(`<div class="af-tag">Section: <b>${SECTION_LABELS[section]}</b> (×${SECTION_MULT[section].toFixed(2)})</div>`);
+  if (maxPrice > 0) afTags.push(`<div class="af-tag">Max <b>$${maxPrice}</b>/ticket</div>`);
+  const afHtml = afTags.length ? `<div class="active-filters">${afTags.join('')}</div>` : '';
+
+  let html = prefix + afHtml + noticeHtml + `
+    <div class="results-hdr">
+      <span>${evs.length} event${evs.length!==1?'s':''} found</span>
+      <select class="sort-sel" onchange="sortEvs(this.value)">
+        <option value="date">Sort: date</option>
+        <option value="price">Sort: lowest price</option>
+        <option value="savings">Sort: best savings</option>
+      </select>
+    </div>`;
+
+  for (const ev of evs) {
+    const platforms = ['tm','sg','sh'].map(id => {
+      const base = ev[id];
+      const opts = applyOptions(base.price, base.fee);
+      return { id, name:{tm:'Ticketmaster',sg:'SeatGeek',sh:'StubHub'}[id], cls:id, url:base.url, live:base.live, ...opts };
+    });
+
+    const minUnit    = Math.min(...platforms.map(p => p.unitPrice));
+    const minGrand   = Math.min(...platforms.map(p => p.grandTotal));
+    const maxGrand   = Math.max(...platforms.map(p => p.grandTotal));
+    const savings    = maxGrand - minGrand;
+    const bestPriceId = platforms.reduce((a,b) => a.unitPrice <= b.unitPrice ? a : b).id;
+    const bestValueId = platforms.reduce((a,b) => a.grandTotal <= b.grandTotal ? a : b).id;
+
+    const sectionNote = section !== 'any'
+      ? `<div class="section-banner">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          Showing prices for <b>${SECTION_LABELS[section]}</b> (×${SECTION_MULT[section].toFixed(2)} vs. baseline)
+         </div>`
+      : '';
+
+    html += `
+      <div class="ecard">
+        <div class="ecard-top">
+          <div style="min-width:0;flex:1">
+            <div class="ecat ${catCls[ev.cat]||'cat-other'}">${catLabels[ev.cat]||'Event'}</div>
+            <div class="etitle">${ev.name}</div>
+            <div class="emeta">${[ev.date,ev.time,ev.venue,ev.city].filter(Boolean).join(' · ')}</div>
+          </div>
+          <div class="eprice-box">
+            <div class="eprice-from">from</div>
+            <div class="eprice-big">$${minUnit}</div>
+            <div class="eprice-total">best total $${minGrand}</div>
+            <div class="eprice-qty">${qty} ticket${qty!==1?'s':''} · ${SECTION_LABELS[section]}</div>
+          </div>
+        </div>
+        <div class="ecard-body">
+          ${sectionNote}
+          <div class="platforms-grid">`;
+
+    for (const p of platforms) {
+      const isBP = p.id === bestPriceId;
+      const iBV  = p.id === bestValueId;
+      const cls  = isBP && iBV ? 'winner-both' : isBP ? 'winner-price' : iBV ? 'winner-value' : '';
+      const tag  = isBP && iBV ? '<span class="ptag ptag-price">Best deal</span>'
+                 : isBP        ? '<span class="ptag ptag-price">Lowest price</span>'
+                 : iBV         ? '<span class="ptag ptag-value">Best value</span>' : '';
+      const lbl  = p.live ? `<span class="plive plive-on">● Live</span>` : `<span class="plive plive-est">Estimated</span>`;
+
+      html += `
+        <div class="pcol ${cls}">
+          ${tag}
+          <div class="pname ${p.cls}">${p.name}</div>
+          ${lbl}
+          <div class="pprice"><b>$${p.unitPrice}</b>/ticket</div>
+          ${qty > 1 ? `<div class="pprice-each">${qty} × $${p.unitPrice} = $${p.totalPrice}</div>` : ''}
+          <div class="pfee">+$${p.totalFee} fees</div>
+          <div class="ptotal">Total: <b>$${p.grandTotal}</b></div>
+          <a class="pbtn" href="${p.url}" target="_blank" rel="noopener">
+            ${p.live ? 'Buy tickets →' : 'Search →'}
+          </a>
+        </div>`;
+    }
+
+    html += `</div>`;
+    if (savings > 0) {
+      html += `<div class="savings-strip">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        Best deal saves <span class="savings-num">$${savings}</span> total for ${qty} ticket${qty!==1?'s':''} vs. most expensive · $${Math.round(savings/qty)} per ticket
+      </div>`;
+    }
+    html += `</div></div>`;
+  }
+
+  area.innerHTML = html;
+}
+
+function sortEvs(by) {
+  if (by === 'price') {
+    allEvs.sort((a,b) => applyOptions(a.tm.price,a.tm.fee).unitPrice - applyOptions(b.tm.price,b.tm.fee).unitPrice);
+  } else if (by === 'savings') {
+    allEvs.sort((a,b) => {
+      const sav = ev => {
+        const ps = ['tm','sg','sh'].map(id => applyOptions(ev[id].price, ev[id].fee).grandTotal);
+        return Math.max(...ps) - Math.min(...ps);
+      };
+      return sav(b) - sav(a);
+    });
+  }
+  renderResults(lastPrefix);
+}
+
+document.getElementById('q').addEventListener('keydown', e => { if (e.key==='Enter') doSearch(); });
+</script>
+</body>
+</html>
